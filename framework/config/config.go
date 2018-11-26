@@ -1,14 +1,15 @@
-package config
+package Config
 
 import (
-	"fmt"
+	"../json"
 	"errors"
+	"fmt"
 	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
-	"json/jsonutil"
+	"os"
+	"reflect"
+	"strings"
 )
-
-
 
 func processFile(config interface{}, errorOnUnmatchedKeys bool, file string) error {
 	data, err := ioutil.ReadFile(file)
@@ -22,10 +23,9 @@ func processFile(config interface{}, errorOnUnmatchedKeys bool, file string) err
 		}
 		return yaml.Unmarshal(data, config)
 	case strings.HasSuffix(file, ".json"):
-		return jsonutil.unmarshalJSON(data, config, errorOnUnmatchedKeys)
-	}
+		return jsonutil.UnmarshalJSON(data, config, errorOnUnmatchedKeys)
 	default:
-		if err := jsonutil.unmarshalJSON(data, config, errorOnUnmatchedKeys); err == nil {
+		if err := jsonutil.UnmarshalJSON(data, config, errorOnUnmatchedKeys); err == nil {
 			return nil
 		} else if strings.Contains(err.Error(), "json: unknown field") {
 			return err
@@ -45,9 +45,11 @@ func processFile(config interface{}, errorOnUnmatchedKeys bool, file string) err
 		}
 
 		return errors.New("failed to decode config")
+	}
 }
 
 func getConfigurationFiles(files ...string) []string {
+	var results []string
 	for i := len(files) - 1; i >= 0; i-- {
 		foundFile := false
 		file := files[i]
@@ -62,11 +64,57 @@ func getConfigurationFiles(files ...string) []string {
 	return results
 }
 
-func Load(config interface{}, errorOnUnmatchedKeys, files ...string) error {
+func processTags(config interface{}) error {
+	configValue := reflect.Indirect(reflect.ValueOf(config))
+	if configValue.Kind() != reflect.Struct {
+		return errors.New("invalid config, should be struct")
+	}
+	configType := configValue.Type()
+	for i := 0; i < configType.NumField(); i++ {
+		var (
+			fieldStruct = configType.Field(i)
+			field       = configValue.Field(i)
+		)
+
+		if isBlank := reflect.DeepEqual(field.Interface(), reflect.Zero(field.Type()).Interface()); isBlank {
+			if value := fieldStruct.Tag.Get("default"); value != "" {
+				if err := yaml.Unmarshal([]byte(value), field.Addr().Interface()); err != nil {
+					return err
+				}
+			} else if fieldStruct.Tag.Get("required") == "true" {
+				return errors.New(fieldStruct.Name + " is required, but blank")
+			}
+		}
+
+		for field.Kind() == reflect.Ptr {
+			field = field.Elem()
+		}
+
+		if field.Kind() == reflect.Struct {
+			if err := processTags(field.Addr().Interface()); err != nil {
+				return err
+			}
+		}
+
+		if field.Kind() == reflect.Slice {
+			for i := 0; i < field.Len(); i++ {
+				if reflect.Indirect(field.Index(i)).Kind() == reflect.Struct {
+					if err := processTags(field.Index(i).Addr().Interface()); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func Load(config interface{}, errorOnUnmatchedKeys bool, files ...string) error {
 	for _, file := range getConfigurationFiles(files...) {
 		if err := processFile(config, errorOnUnmatchedKeys, file); err != nil {
 			return err
 		}
 	}
 
+	return processTags(config)
 }

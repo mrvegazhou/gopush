@@ -5,4 +5,6 @@ db:
     user:     test
     password: test
     port:     1234
+db2:
+    name2:     ssss
 
