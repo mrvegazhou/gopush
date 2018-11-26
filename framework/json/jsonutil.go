@@ -2,28 +2,25 @@ package jsonutil
 
 import (
 	"encoding/json"
+	"io"
+	"strings"
 )
 
-//将传入对象转换为json字符串
-func GetJsonString(obj interface{}) string {
-	resByte, err := json.Marshal(obj)
-	if err != nil {
-		return ""
-	}
-	return string(resByte)
-}
+// unmarshalJSON unmarshals the given data into the config interface.
+// If the errorOnUnmatchedKeys boolean is true, an error will be returned if there
+// are keys in the data that do not match fields in the config interface.
+func unmarshalJSON(data []byte, config interface{}, errorOnUnmatchedKeys bool) error {
+	reader := strings.NewReader(string(data))
+	decoder := json.NewDecoder(reader)
 
-//将传入对象转换为json字符串
-func Marshal(v interface{}) (string, error) {
-	resByte, err := json.Marshal(v)
-	if err != nil {
-		return "", err
-	} else {
-		return string(resByte), nil
+	if errorOnUnmatchedKeys {
+		decoder.DisallowUnknownFields()
 	}
-}
 
-//将传入的json字符串转换为对象
-func Unmarshal(jsonstring string, v interface{}) error {
-	return json.Unmarshal([]byte(jsonstring), v)
+	err := decoder.Decode(config)
+	if err != nil && err != io.EOF {
+		return err
+	}
+	return nil
+
 }
