@@ -1,10 +1,10 @@
 appname: gopush
 
-db:
+mongodb:
     name:     test
     user:     test
     password: test
     port:     1234
-db2:
-    name2:     ssss
+jwt:
+    key:  token-key-123
 
