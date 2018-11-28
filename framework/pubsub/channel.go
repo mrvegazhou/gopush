@@ -58,7 +58,12 @@ func (ch *Channel) Drop() {
 		defer ch.mx.Unlock()
 		ch.tor.Drop()
 		ch.data = nil
-
+		// if ch.notif != nil && !ch.notif.pinged {
+		// 	ch.notif.ping <- true
+		// }
 		ch.notif = nil
+		if ch.onClose != nil {
+			ch.onClose(ch.id)
+		}
 	}
 }
