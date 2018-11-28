@@ -5,3 +5,8 @@ const (
 	ConnType_WebSocket = "websocket"
 	ConnType_LongPoll  = "longpoll"
 )
+
+const (
+	no int32 = iota
+	yes
+)
