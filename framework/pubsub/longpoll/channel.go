@@ -102,29 +102,11 @@ func (ch *Channel) Get(polltime time.Duration) (chan []interface{}, error) {
 		pollend := make(chan bool, 1)
 		go ch.startLongpollTimer(polltime, pollend, &gotdata)
 
-		select {
-		case <-notif.ping:
-			ch.onNewDataLocking(resp, notif)
-		case <-pollend:
-			ch.onLongpollTimeoutLocking(resp, notif)
-		}
-
-		atomic.StoreInt32(&gotdata, yes)
 	}()
 }
 
 func (ch *Channel) startLongpollTimer(polltime time.Duration, pollend chan bool, gotdata *int32) {
-	hundredth := polltime / 100
-	endpoint := time.Now().Add(polltime)
-	for time.Now().Before(endpoint) {
-		// if Get has data, this timer is irrelevant
-		if atomic.LoadInt32(gotdata) == yes {
-			return
-		}
-		// splitting polltime into 100 segments, let it quit much quicker
-		time.Sleep(hundredth)
-	}
-	pollend <- true
+	
 }
 
 
