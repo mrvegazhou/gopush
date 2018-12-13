@@ -2,112 +2,128 @@ package chatroom
 
 import (
 	"container/list"
+	"github.com/gorilla/websocket"
+	"log"
 	"time"
 )
 
+/////////////////////////////////begin archive/////////////////////////////////////////
+type EventType int
+
+const (
+	EVENT_JOIN = iota
+	EVENT_LEAVE
+	EVENT_MESSAGE
+)
+const archiveSize = 20
+
 type Event struct {
-	Type      string // "join", "leave", or "message"
+	Type      EventType // JOIN, LEAVE, MESSAGE
 	User      string
-	Timestamp int    // Unix timestamp (secs)
-	Text      string // What the user said (if Type == "message")
+	Timestamp int // Unix timestamp (secs)
+	Content   string
 }
 
-func newEvent(typ, user, msg string) Event {
-	return Event{typ, user, int(time.Now().Unix()), msg}
+var archive = list.New()
+
+func newArchive(event Event) {
+	if archive.Len() >= archiveSize {
+		archive.Remove(archive.Front())
+	}
+	archive.PushBack(event)
 }
 
-type Subscription struct {
-	Archive []Event      // All the events from the archive.
-	New     <-chan Event // New events coming in.
-}
-
-// Owner of a subscription must cancel it when they stop listening to events.
-func (s Subscription) Cancel() {
-	unsubscribe <- s.New // Unsubscribe the channel.
-	drain(s.New)         // Drain it, just in case there was a pending publish.
-}
-
-// Drains a given channel of any messages.
-func drain(ch <-chan Event) {
-	for {
-		select {
-		case _, ok := <-ch:
-			if !ok {
-				return
-			}
-		default:
-			return
+func GetEvents(lastReceived int) []Event {
+	events := make([]Event, 0, archive.Len())
+	for event := archive.Front(); event != nil; event = event.Next() {
+		e := event.Value.(Event)
+		if e.Timestamp > int(lastReceived) {
+			events = append(events, e)
 		}
 	}
+	return events
 }
 
-const archiveSize = 10
+///////////////////////////////end archive//////////////////////////////////////////////
+
+type Subscriber struct {
+	Name string
+	Conn *websocket.Conn // Only for WebSocket users; otherwise nil.
+}
 
 var (
-	// 当有新用户加入时，初始化的一些订阅信息
-	subscribe = make(chan (chan<- Subscription), 10) //只能用来接收
-	// 在信道channel中发送退订
-	unsubscribe = make(chan (<-chan Event), 10) //发送消息
-	// 在这里发送事件
-	publish = make(chan Event, 10)
+	// Channel for new join users.
+	subscribe = make(chan Subscriber, 10)
+	// Channel for exit users.
+	unsubscribe = make(chan string, 10)
+	// Send events here to publish them.
+	publish = make(chan models.Event, 10)
+	// Long polling waiting list.
+	waitingList = list.New()
+	subscribers = list.New()
 )
 
-func Subscribe() Subscription {
-	resp := make(chan Subscription)
-	subscribe <- resp
-	return <-resp
+type Subscription struct {
+	Archive []models.Event      // All the events from the archive.
+	New     <-chan models.Event // New events coming in.
 }
 
-func Join(user string) {
-	publish <- newEvent("join", user, "")
+func newEvent(ep models.EventType, user, msg string) models.Event {
+	return models.Event{ep, user, int(time.Now().Unix()), msg}
 }
 
-func Say(user, message string) {
-	publish <- newEvent("message", user, message)
+func Join(user string, ws *websocket.Conn) {
+	subscribe <- Subscriber{Name: user, Conn: ws}
 }
 
-func Leave(user string) {
-	publish <- newEvent("leave", user, "")
+func isUserExist(subscribers *list.List, user string) bool {
+	for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
+		if sub.Value.(Subscriber).Name == user {
+			return true
+		}
+	}
+	return false
 }
 
-// This function loops forever, handling the chat room pubsub
 func chatroom() {
-	// 最近的几条聊天记录
-	archive := list.New()
-	// 订阅者列表
-	subscribers := list.New()
 	for {
 		select {
-		case ch := <-subscribe:
-			var events []Event
-			// 获取list的第一个元素
-			for e := archive.Front(); e != nil; e = e.Next() {
-				events = append(events, e.Value.(Event))
+		case sub := <-subscribe:
+			if !isUserExist(subscribers, sub.Name) {
+				subscribers.PushBack(sub) // Add user to the end of list.
+				// Publish a JOIN event.
+				publish <- newEvent(EVENT_JOIN, sub.Name, "")
+				log.Println("New user:", sub.Name, ";WebSocket:", sub.Conn != nil)
+			} else {
+				log.Println("Old user:", sub.Name, ";WebSocket:", sub.Conn != nil)
 			}
-			// 在list l的末尾插入值为v的元素，并返回该元素
-
-		// 发送 Event 给所有订阅者，并且增加到聊天记录中
 		case event := <-publish:
-			for ch := subscribers.Front(); ch != nil; ch = ch.Next() {
-				ch.Value.(chan Event) <- event
+			// Notify waiting list.
+			for ch := waitingList.Back(); ch != nil; ch = ch.Prev() {
+				ch.Value.(chan bool) <- true
+				waitingList.Remove(ch)
 			}
-			if archive.Len() >= archiveSize {
-				archive.Remove(archive.Front())
-			}
-			archive.PushBack(event)
 
-		// 订阅者离开后，从用户列表中删除离开者
+			broadcastWebSocket(event)
+			newArchive(event)
+
+			if event.Type == EVENT_MESSAGE {
+				log.Println("Message from", event.User, ";Content:", event.Content)
+			}
 		case unsub := <-unsubscribe:
-			for ch := subscribers.Front(); ch != nil; ch = ch.Next() {
-				if ch.Value.(chan Event) == unsub {
-					subscribers.Remove(ch)
+			for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
+				if sub.Value.(Subscriber).Name == unsub {
+					subscribers.Remove(sub)
+					// Clone connection.
+					ws := sub.Value.(Subscriber).Conn
+					if ws != nil {
+						ws.Close()
+						log.Println("WebSocket closed:", unsub)
+					}
+					publish <- newEvent(EVENT_LEAVE, unsub, "") // Publish a LEAVE event.
 					break
 				}
 			}
 		}
 	}
-}
-
-func init() {
-	go chatroom()
 }

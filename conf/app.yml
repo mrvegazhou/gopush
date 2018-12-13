@@ -7,4 +7,6 @@ mongodb:
     port:     1234
 jwt:
     key:  token-key-123
+json:
+    pretty:   true
 
