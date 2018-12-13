@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/gorilla/mux"
-	"net/http"
+	"github.com/gin-gonic/gin"
+	"../controller/chat"
 )
 
 type Route struct {
@@ -13,22 +13,15 @@ type Route struct {
 }
 
 var routes []Route
-
+//https://github.com/winlion/restgo/blob/master/controller/PageController.go
 func init() {
-	//register("GET", "/movies", controllers.AllMovies, auth.TokenMiddleware)
+	register("GET", "/chat", controllers., auth.TokenMiddleware)
+	register("GET", "/movies", controllers., auth.TokenMiddleware)
+
 }
 
-func CreateRouter(conf interface{}) *mux.Router {
-	router := mux.NewRouter()
-	for _, route := range routes {
-		r := router.Methods(route.Method).Path(route.Pattern)
-		if route.Middleware != nil {
-			r.Handler(route.Middleware(route.Handler, conf))
-		} else {
-			r.Handler(route.Handler)
-		}
-	}
-	return router
+func registerRouter(router *gin.Engine, conf interface{}) {
+	new(controller.PageController).Router(router)
 }
 
 func register(method, pattern string, handler http.HandlerFunc, middleware mux.MiddlewareFunc) {
