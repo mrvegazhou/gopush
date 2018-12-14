@@ -31,6 +31,7 @@ func main() {
 	// }()
 	Config.Load(&Conf, false, "conf/app.yml")
 	router := gin.Default()
+	router.LoadHTMLGlob("views/**/*.html")
 	createRouter(router, Conf)
 	http.ListenAndServe(Conf.Port+":"+Conf.Addr, router)
 }

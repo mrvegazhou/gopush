@@ -108,7 +108,7 @@ func chatroom() {
 				waitingList.Remove(ch)
 			}
 
-			//broadcastWebSocket(event)
+			broadcastWebSocket(event, broadcastWebSocket)
 			newArchive(event)
 
 			if event.Type == EVENT_MESSAGE {
