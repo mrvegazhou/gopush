@@ -76,6 +76,10 @@ func Join(user string, ws *websocket.Conn) {
 	subscribe <- Subscriber{Name: user, Conn: ws}
 }
 
+func Leave(user string) {
+	unsubscribe <- user
+}
+
 func isUserExist(subscribers *list.List, user string) bool {
 	for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
 		if sub.Value.(Subscriber).Name == user {

@@ -4,11 +4,13 @@ import (
 	"./framework/config"
 	"fmt"
 	"net/http"
+	"routes/routes"
 )
 
 var Conf = struct {
 	APPName string `default:"app name"`
-
+	Port    int    `default:8080`
+	Addr    string `default:127.0.0.1`
 	Mongodb struct {
 		Name     string
 		User     string `default:"root"`
@@ -28,7 +30,7 @@ func main() {
 	// 	}
 	// }()
 	Config.Load(&Conf, false, "conf/app.yml")
-
-	r := routes.CreateRouter(Conf)
-	http.ListenAndServe(":8080", r)
+	router := gin.Default()
+	createRouter(router, Conf)
+	http.ListenAndServe(Conf.Port+":"+Conf.Addr, router)
 }
