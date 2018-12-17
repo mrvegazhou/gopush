@@ -1,14 +1,14 @@
-package controllers
+package baseController
 
 import (
-	"./baseController"
+	"../../framework/pubsub/chat/longpolling"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"strconv"
 )
 
 type ChatController struct {
-	restgo.Controller
+	Controller
 }
 
 // func (ctrl *ChatController) before() gin.HandlerFunc {
@@ -23,19 +23,30 @@ type ChatController struct {
 // }
 
 func (ctrl *ChatController) Router(router *gin.Engine, conf interface{}) {
-	// router.GET("/", ctrl.showIndex)
-	router.POST("/", ctrl.create)
+	router.GET("/lp", ctrl.showIndex)
+	router.GET("/lp/fetch", ctrl.fetch)
+	router.POST("/lp/post", ctrl.post)
 }
 
-func (ctrl *ChatController) create(ctx *gin.Context) {
-	ctrl.Data = []int{1, 2, 3}
+func (ctrl *ChatController) fetch(ctx *gin.Context) {
+	lastReceived := ctx.DefaultQuery("lastReceived", "111") //time.Now().Unix()
+	fmt.Printf("lastReceived:", lastReceived)
+	lastReceivedInt, _ := strconv.Atoi(lastReceived)
+	ctrl.Data = longpolling.FetchMsgs(lastReceivedInt)
 	ctrl.AjaxData(ctx)
 }
 
 func (ctrl *ChatController) showIndex(ctx *gin.Context) {
-
+	ctx.Header("Content-Type", "text/html; charset=utf-8")
+	ctx.HTML(200, "longpolling.html", gin.H{})
 }
 
-func (ctrl *PageController) Redirect(ctx *gin.Context) {
+func (ctrl *ChatController) post(ctx *gin.Context) {
+	uname := ctx.PostForm("uname")
+	content := ctx.PostForm("content")
+	longpolling.PostMsg(uname, content)
+}
+
+func (ctrl *ChatController) Redirect(ctx *gin.Context) {
 	ctx.Redirect(302, "/")
 }

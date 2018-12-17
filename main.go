@@ -2,9 +2,11 @@ package main
 
 import (
 	"./framework/config"
-	"fmt"
+	"./httpserver/routes"
+	// "fmt"
+	"github.com/gin-gonic/gin"
 	"net/http"
-	"routes/routes"
+	"strconv"
 )
 
 var Conf = struct {
@@ -31,7 +33,8 @@ func main() {
 	// }()
 	Config.Load(&Conf, false, "conf/app.yml")
 	router := gin.Default()
-	router.LoadHTMLGlob("views/**/*.html")
-	createRouter(router, Conf)
-	http.ListenAndServe(Conf.Port+":"+Conf.Addr, router)
+	router.LoadHTMLGlob("./httpserver/views/*.html")
+	router.StaticFS("/static", http.Dir("./httpserver/views/static"))
+	routes.CreateRouter(router, Conf)
+	http.ListenAndServe(":"+strconv.Itoa(Conf.Port), router)
 }

@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"chatroom/chatroom"
+	"../chatroom"
 	"container/list"
 	"encoding/json"
 	"github.com/gorilla/websocket"

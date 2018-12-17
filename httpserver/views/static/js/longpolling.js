@@ -5,8 +5,9 @@ var fetch = function () {
     if (isWait) return;
     isWait = true;
     $.getJSON("/lp/fetch?lastReceived=" + lastReceived, function (data) {
-        if (data == null) return;
-        $.each(data, function (i, event) {
+        if (data.data == null) return;
+        console.log(data);
+        $.each(data.data, function (i, event) {
             var li = document.createElement('li');
 
             switch (event.Type) {

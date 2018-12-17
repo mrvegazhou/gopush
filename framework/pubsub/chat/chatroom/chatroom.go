@@ -1,7 +1,9 @@
 package chatroom
 
 import (
+	// "../websocket"
 	"container/list"
+	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 	"time"
@@ -57,19 +59,19 @@ var (
 	// Channel for exit users.
 	unsubscribe = make(chan string, 10)
 	// Send events here to publish them.
-	publish = make(chan models.Event, 10)
+	Publish = make(chan Event, 10)
 	// Long polling waiting list.
-	waitingList = list.New()
+	WaitingList = list.New()
 	subscribers = list.New()
 )
 
-type Subscription struct {
-	Archive []models.Event      // All the events from the archive.
-	New     <-chan models.Event // New events coming in.
-}
+// type Subscription struct {
+// 	Archive []Event      // All the events from the archive.
+// 	New     <-chan Event // New events coming in.
+// }
 
-func newEvent(ep models.EventType, user, msg string) models.Event {
-	return models.Event{ep, user, int(time.Now().Unix()), msg}
+func NewEvent(ep EventType, user, msg string) Event {
+	return Event{ep, user, int(time.Now().Unix()), msg}
 }
 
 func Join(user string, ws *websocket.Conn) {
@@ -96,19 +98,20 @@ func chatroom() {
 			if !isUserExist(subscribers, sub.Name) {
 				subscribers.PushBack(sub) // Add user to the end of list.
 				// Publish a JOIN event.
-				publish <- newEvent(EVENT_JOIN, sub.Name, "")
+				Publish <- NewEvent(EVENT_JOIN, sub.Name, "")
 				log.Println("New user:", sub.Name, ";WebSocket:", sub.Conn != nil)
 			} else {
 				log.Println("Old user:", sub.Name, ";WebSocket:", sub.Conn != nil)
 			}
-		case event := <-publish:
+		case event := <-Publish:
+			fmt.Print("event:", event)
 			// Notify waiting list.
-			for ch := waitingList.Back(); ch != nil; ch = ch.Prev() {
+			for ch := WaitingList.Back(); ch != nil; ch = ch.Prev() {
 				ch.Value.(chan bool) <- true
-				waitingList.Remove(ch)
+				WaitingList.Remove(ch)
 			}
 
-			broadcastWebSocket(event, broadcastWebSocket)
+			// websocket.broadcastWebSocket(event, subscribers)
 			newArchive(event)
 
 			if event.Type == EVENT_MESSAGE {
@@ -124,10 +127,14 @@ func chatroom() {
 						ws.Close()
 						log.Println("WebSocket closed:", unsub)
 					}
-					publish <- newEvent(EVENT_LEAVE, unsub, "") // Publish a LEAVE event.
+					Publish <- NewEvent(EVENT_LEAVE, unsub, "") // Publish a LEAVE event.
 					break
 				}
 			}
 		}
 	}
+}
+
+func init() {
+	go chatroom()
 }

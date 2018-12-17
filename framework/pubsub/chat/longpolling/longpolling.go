@@ -1,12 +1,12 @@
 package longpolling
 
 import (
-	"chatroom/chatroom"
+	"../chatroom"
 )
 
 func JoinChat(uname string) {
 	// Join chat room.
-	Join(uname, nil)
+	chatroom.Join(uname, nil)
 	return
 }
 
@@ -15,7 +15,7 @@ func PostMsg(uname, content string) {
 		return
 	}
 
-	publish <- newEvent(chatroom.EVENT_MESSAGE, uname, content)
+	chatroom.Publish <- chatroom.NewEvent(chatroom.EVENT_MESSAGE, uname, content)
 }
 
 func FetchMsgs(lastReceived int) []chatroom.Event {
@@ -27,8 +27,8 @@ func FetchMsgs(lastReceived int) []chatroom.Event {
 
 	// Wait for new message(s).
 	ch := make(chan bool)
-	waitingList.PushBack(ch)
+	chatroom.WaitingList.PushBack(ch)
 	<-ch
 
-	return models.GetEvents(lastReceived)
+	return chatroom.GetEvents(lastReceived)
 }
