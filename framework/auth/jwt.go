@@ -1,64 +1,59 @@
 package jwtauth
 
 import (
+	"../../../const/code"
+	"../../../const/msg"
 	"../http/httputil"
 	"fmt"
 	jwt "github.com/dgrijalva/jwt-go"
-	"net/http"
 )
+
+//JWT的签发者
+var iss = "iss"
+var exp = time.Hour * 24 * 90
 
 type MyCustomClaims struct {
 	Username string `json:"username"`
+	Password string `json:"password"`
 	Id       int    `json:"id"`
 	jwt.StandardClaims
 }
 
-func GenerateToken(signingKey string, payload interface{}) (string, error) {
+var mySalt = []byte("mySalt")
+
+func GenerateToken(payload interface{}) (string, error) {
 	claims := MyCustomClaims{
 		payload.Username,
+		payload.Password,
 		payload.Id,
+		time.Now().Unix(),
+		time.Now().Add(exp).Unix(),
 		jwt.StandardClaims{
-			ExpiresAt: 15000,
-			Issuer:    "app",
+			ExpiresAt: exp,
+			Issuer:    iss,
+			IssuedAt:	time.Now().Unix()
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(signingKey)
+	return token.SignedString(mySalt)
 }
 
-func JwtMiddleware(next http.Handler, conf interface{}) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// defer func() {
-		// 	if err := recover(); err != nil {
-		// 		fmt.Printf("err:", err)
-		// 	}
-		// }()
-		tokenStr := r.Header.Get("authorization")
-		if tokenStr == "" {
-			httphelper.ResponseWithJson(w, http.StatusUnauthorized, httphelper.Response{Code: http.StatusUnauthorized, Msg: "not authorized"})
-		} else {
-			token, _ := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					httphelper.ResponseWithJson(w, http.StatusUnauthorized, httphelper.Response{Code: http.StatusUnauthorized, Msg: "not authorized"})
-					return nil, fmt.Errorf("not authorization")
-				}
-				return []byte(conf.Jwt.Key), nil
-			})
-			var msg
-			if token.Valid {
-				msg := "You look nice today"
-			} else if ve, ok := err.(*jwt.ValidationError); ok {
-				if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-					msg := "That's not even a token"
-				} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-					msg := "Timing is everything"
-				} else {
-					msg := fmt.Sprintf("%s:%s", "Couldn't handle this token:" , err)
-				}
-			} else {
-				msg := fmt.Sprintf("%s:%s", "Couldn't handle this token:", err)
-			}
-			return nil, fmt.Errorf(msg)
-		}
+func ParseToken(tokenStr string) (jwt.MapClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return mySalt, nil
 	})
+	if err != nil {
+		return nil, constdefine.GetMsg(constdefine.ERROR_AUTH_CHECK_TOKEN_FAIL)
+	}
+	if jwt.SigningMethodHS256.Alg() != token.Header["alg"] {
+		return nil, constdefine.GetMsg(constdefine.ERROR_AUTH_CHECK_TOKEN_FAIL)
+	}
+	if !token.Valid {
+		return nil, constdefine.GetMsg(constdefine.ERROR_AUTH_CHECK_TOKEN_FAIL)
+	}
+	claims := token.Claims.(*MyCustomClaims)
+	if claims["iss"] != iss {
+		return nil, constdefine.GetMsg(constdefine.ERROR_AUTH_CHECK_TOKEN_FAIL)
+	}
+	return claims, nil
 }
