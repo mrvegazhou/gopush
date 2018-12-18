@@ -4,6 +4,7 @@ type DbServer struct {
 	DbType     string
 	DbUserName string
 	DbPassword string
+	DbName     string
 	Port       uint `default:"3306"`
 }
 
