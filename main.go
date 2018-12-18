@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./conf"
 	"./framework/config"
 	"./framework/helper"
 	"./framework/log"
@@ -13,25 +14,8 @@ import (
 	"sync"
 )
 
-type DbServer struct {
-	DbType     string
-	DbUserName string
-	DbPassword string
-	Port       uint `default:"3306"`
-}
-
 var (
-	Conf = struct {
-		APPName   string `default:"app name"`
-		Port      int    `default:8080`
-		Addr      string `default:127.0.0.1`
-		DbServers struct {
-			DbServer1 DbServer
-		}
-		Jwt struct {
-			Key string `default:"secret"`
-		}
-	}{}
+	Conf        = new(conf.MainConfig)
 	once        sync.Once
 	innerLogger *logger.InnerLogger
 )
