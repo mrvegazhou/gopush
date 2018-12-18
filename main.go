@@ -13,18 +13,21 @@ import (
 	"sync"
 )
 
+type DbServer struct {
+	DbType     string
+	DbUserName string
+	DbPassword string
+	Port       uint `default:"3306"`
+}
+
 var (
 	Conf = struct {
-		APPName string `default:"app name"`
-		Port    int    `default:8080`
-		Addr    string `default:127.0.0.1`
-		Mongodb struct {
-			Name     string
-			User     string `default:"root"`
-			Password string `required:"true"`
-			Port     uint   `default:"3306"`
+		APPName   string `default:"app name"`
+		Port      int    `default:8080`
+		Addr      string `default:127.0.0.1`
+		DbServers struct {
+			DbServer1 DbServer
 		}
-
 		Jwt struct {
 			Key string `default:"secret"`
 		}
