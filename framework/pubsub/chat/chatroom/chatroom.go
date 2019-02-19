@@ -1,8 +1,8 @@
 package chatroom
 
 import (
-	// "../websocket"
 	"container/list"
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
@@ -63,6 +63,10 @@ var (
 	// Long polling waiting list.
 	WaitingList = list.New()
 	subscribers = list.New()
+	// 群消息
+	subscribersIngroup = list.New()
+	// P2P消息
+	subscribersInFriends = list.New()
 )
 
 // type Subscription struct {
@@ -91,6 +95,24 @@ func isUserExist(subscribers *list.List, user string) bool {
 	return false
 }
 
+func broadcastWebSocket(event Event) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		log.Println("Fail to marshal event:", err)
+		return
+	}
+	for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
+		// Immediately send event to WebSocket users.
+		ws := sub.Value.(Subscriber).Conn
+		if ws != nil {
+			if ws.WriteMessage(websocket.TextMessage, data) != nil {
+				// User disconnected.
+				unsubscribe <- sub.Value.(Subscriber).Name
+			}
+		}
+	}
+}
+
 func chatroom() {
 	for {
 		select {
@@ -111,7 +133,7 @@ func chatroom() {
 				WaitingList.Remove(ch)
 			}
 
-			// websocket.broadcastWebSocket(event, subscribers)
+			broadcastWebSocket(event)
 			newArchive(event)
 
 			if event.Type == EVENT_MESSAGE {

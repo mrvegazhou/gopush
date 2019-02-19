@@ -1,11 +1,11 @@
 package conf
 
-type DbServer struct {
-	DbType     string
+type Postgresql struct {
+	DbType     string `default:"postgresql"`
 	DbUserName string
 	DbPassword string
 	DbName     string
-	Port       uint `default:"3306"`
+	Port       uint `default:"5432"`
 }
 
 type MainConfig struct {

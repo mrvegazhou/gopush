@@ -3,7 +3,6 @@ package websocket
 import (
 	"../chatroom"
 	"container/list"
-	"encoding/json"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -32,23 +31,5 @@ func Join(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		publish <- newEvent(chatroom.EVENT_MESSAGE, uname, string(p))
-	}
-}
-
-func broadcastWebSocket(event chatroom.Event, subscribers list.list) {
-	data, err := json.Marshal(event)
-	if err != nil {
-		log.Println("Fail to marshal event:", err)
-		return
-	}
-	for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
-		// Immediately send event to WebSocket users.
-		ws := sub.Value.(Subscriber).Conn
-		if ws != nil {
-			if ws.WriteMessage(websocket.TextMessage, data) != nil {
-				// User disconnected.
-				unsubscribe <- sub.Value.(Subscriber).Name
-			}
-		}
 	}
 }
