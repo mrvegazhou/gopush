@@ -8,7 +8,6 @@ import (
 	"./httpserver/routes"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 	"net/http"
 	"strconv"
 	"sync"
@@ -41,9 +40,6 @@ func main() {
 	})
 	fmt.Printf("Conf:", Conf)
 	router := gin.Default()
-
-	// 设置表单验证 validator.v9
-	binding.Validator = new(utils.ValidatorV9)
 
 	router.LoadHTMLGlob("./httpserver/views/*.html")
 	router.StaticFS("/static", http.Dir("./httpserver/views/static"))

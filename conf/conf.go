@@ -12,9 +12,7 @@ type MainConfig struct {
 	APPName   string `default:"app name"`
 	Port      int    `default:8080`
 	Addr      string `default:127.0.0.1`
-	DbServers struct {
-		DbServer1 DbServer
-	}
+	Postgresql
 	Jwt struct {
 		Key string `default:"secret"`
 	}

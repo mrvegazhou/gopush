@@ -1,11 +1,9 @@
 package jwtauth
 
 import (
-	"../../../const/code"
-	"../../../const/msg"
-	"../http/httputil"
-	"fmt"
+	"../../const"
 	jwt "github.com/dgrijalva/jwt-go"
+	"time"
 )
 
 //JWT的签发者
@@ -23,22 +21,18 @@ var mySalt = []byte("mySalt")
 
 func GenerateToken(payload interface{}) (string, error) {
 	claims := MyCustomClaims{
-		payload.Username,
-		payload.Password,
-		payload.Id,
-		time.Now().Unix(),
-		time.Now().Add(exp).Unix(),
-		jwt.StandardClaims{
-			ExpiresAt: exp,
-			Issuer:    iss,
-			IssuedAt:	time.Now().Unix()
-		},
+		Username: payload.Username,
+		Password: payload.Password,
+		Id: payload.Id,
+		ExpiresAt: time.Now().Add(exp).Unix(),
+		Issuer:    iss,
+		IssuedAt:	time.Now().Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(mySalt)
 }
 
-func ParseToken(tokenStr string) (jwt.MapClaims, error) {
+func ParseToken(tokenStr string) (*MyCustomClaims, string) {
 	token, err := jwt.ParseWithClaims(tokenStr, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return mySalt, nil
 	})
@@ -52,8 +46,8 @@ func ParseToken(tokenStr string) (jwt.MapClaims, error) {
 		return nil, constdefine.GetMsg(constdefine.ERROR_AUTH_CHECK_TOKEN_FAIL)
 	}
 	claims := token.Claims.(*MyCustomClaims)
-	if claims["iss"] != iss {
+	if claims.Issuer != iss {
 		return nil, constdefine.GetMsg(constdefine.ERROR_AUTH_CHECK_TOKEN_FAIL)
 	}
-	return claims, nil
+	return claims, ""
 }

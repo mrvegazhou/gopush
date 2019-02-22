@@ -1,24 +1,27 @@
 package middlewareJwt
 
 import (
-	"../../../const/code"
-	"../../../const/msg"
-	"../../../framework/auth/jwt"
+	"../../../const"
+	"../../../framework/auth"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 func JWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var code int
 		var data interface{}
-
-		token := c.Query("token")
+		path := c.Request.URL.Path
+		if path == "/device" {
+			return
+		}
+		token := c.GetHeader("token")
 		if token == "" {
 			code = constdefine.INVALID_PARAMS
 		} else {
 			claims, err := jwtauth.ParseToken(token)
-			if err != nil {
+			if err != "" {
 				code = constdefine.ERROR_AUTH_CHECK_TOKEN_FAIL
 			} else if time.Now().Unix() > claims.ExpiresAt {
 				code = constdefine.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
@@ -27,9 +30,9 @@ func JWT() gin.HandlerFunc {
 
 		if code != constdefine.SUCCESS {
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"code": code,
-				"msg":  constdefine.GetMsg(code),
-				"data": data,
+				"Code": code,
+				"Msg":  constdefine.GetMsg(code),
+				"Data": data,
 			})
 
 			c.Abort()

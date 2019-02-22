@@ -5,18 +5,28 @@ import (
 	_ "database/sql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"strconv"
 )
 
-func ConnectDB(mainConf *conf.MainConfig) (bool, error) {
-	dbType := mainConf.DbServer.DbType
-	dbUserName := mainConf.DbServer.DbUserName
-	dbUserPassword := mainConf.DbServer.DbPassword
-	dbName := mainConf.DbServer.DbName
-	Port := mainConf.DbServer.Port
+// Session 会话
+type Session struct {
+	DB	*gorm.DB
+}
 
-	DB, err = gorm.Open(dbType, "user="+dbUserName+" dbname="+dbName+" password="+dbUserPassword+" sslmode=disable")
+func ConnectDB(mainConf *conf.MainConfig) *Session {
+	dbType := mainConf.DbType
+	dbUserName := mainConf.DbUserName
+	dbUserPassword := mainConf.DbPassword
+	dbName := mainConf.DbName
+	dbPort := strconv.Itoa(mainConf.Port)
+	//user=gorm password=gorm DB.name=gorm port=9920 sslmode=disable
+	var err error
+	var db *gorm.DB
+	db, err = gorm.Open(dbType, "user=" + dbUserName + " password=" + dbUserPassword + " DB.name=" + dbName + " port=" + dbPort + " sslmode=disable")
 	if err != nil {
-		return false, err
+		panic(err)
 	}
-	return true, nil
+	factory := new(Session)
+	factory.DB = db
+	return factory
 }

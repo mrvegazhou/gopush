@@ -2,6 +2,7 @@ package httphelper
 
 import (
 	"encoding/json"
+	"gopush/const"
 	"net/http"
 )
 
@@ -16,4 +17,20 @@ func ResponseWithJson(w http.ResponseWriter, code int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(response)
+}
+
+func NewWithError(code int, msg string) *Response {
+	return &Response{
+		Code:   code,
+		Msg: 	msg,
+		Data:   nil,
+	}
+}
+
+func NewSuccess(data interface{}) *Response {
+	return &Response{
+		Code:    constdefine.SUCCESS,
+		Msg: "success",
+		Data:    data,
+	}
 }

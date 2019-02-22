@@ -4,6 +4,8 @@ package constdefine
 const (
 	ConnType_WebSocket = "websocket"
 	ConnType_LongPoll  = "longpoll"
+	KeyDeviceId = "device_id"
+	KeyUserId   = "user_id"
 )
 
 const (
