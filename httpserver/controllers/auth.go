@@ -1,9 +1,7 @@
 package baseController
 
 import (
-	"../../../const/code"
-	"../../../const/msg"
-	"fmt"
+	"../../const"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,12 +13,13 @@ func (ctrl *JwtController) Router(router *gin.Engine, conf interface{}) {
 	router.GET("/auth", ctrl.getAuth)
 }
 
-type auth struct {
+type Authentication struct {
 	Username string `form:"username" validate:"required"`
 	Password string `form:"password" validate:"required"`
 }
 
 func getAuth(c *gin.Context) {
+	var auth Authentication
 	err := c.ShouldBind(&auth)
 	result := gin.H{}
 	if err != nil {
