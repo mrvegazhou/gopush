@@ -60,7 +60,7 @@ func verify(c *imctx.IMContext, ctx *imctx.Context) {
 	c.Next()
 }
 
-func initVerify(conf *conf.MainConfig) {
+func InitVerify(conf *conf.MainConfig) {
 	gin.New().Use(handler(verify, imctx.NewContext(db.ConnectDB(conf), conf)))
 }
 

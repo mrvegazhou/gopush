@@ -35,6 +35,7 @@ func main() {
 
 	router.LoadHTMLGlob("./httpserver/views/*.html")
 	router.StaticFS("/static", http.Dir("./httpserver/views/static"))
+	routes.InitVerify(Conf)
 	routes.CreateRouter(router, Conf)
 	http.ListenAndServe(":"+strconv.Itoa(Conf.Port), router)
 }
