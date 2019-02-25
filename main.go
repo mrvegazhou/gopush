@@ -3,8 +3,6 @@ package main
 import (
 	"./conf"
 	"./framework/config"
-	"./framework/helper"
-	"./framework/log"
 	"./httpserver/routes"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -16,12 +14,7 @@ import (
 var (
 	Conf        = new(conf.MainConfig)
 	once        sync.Once
-	innerLogger *logger.InnerLogger
 )
-
-func init() {
-	innerLogger = logger.GetInnerLogger()
-}
 
 func main() {
 	// defer func() {
@@ -33,10 +26,9 @@ func main() {
 	// 		os.Stdout.Write([]byte(errMsg))
 	// 	}
 	// }()
-	baseDir := helper.GetCurrentDirectory()
+
 	once.Do(func() {
 		Config.Load(&Conf, false, "conf/app.yml")
-		logger.StartInnerLogHandler(baseDir)
 	})
 	fmt.Printf("Conf:", Conf)
 	router := gin.Default()
