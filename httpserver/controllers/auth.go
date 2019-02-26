@@ -18,13 +18,13 @@ type Authentication struct {
 	Password string `form:"password" validate:"required"`
 }
 
-func getAuth(c *gin.Context) {
+func (JwtController) getAuth(c *gin.Context) {
 	var auth Authentication
 	err := c.ShouldBind(&auth)
 	result := gin.H{}
 	if err != nil {
-		result["code"] = constdefine.InvalidParams
-		result["message"] = constdefine.GetMsg(constdefine.InvalidParams)
+		result["code"] = constdefine.INVALID_PARAMS
+		result["message"] = constdefine.GetMsg(constdefine.INVALID_PARAMS)
 		c.JSON(200, result)
 		return
 	}
