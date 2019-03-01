@@ -1,8 +1,8 @@
 package imModel
 
 import (
+	"gopush/framework/db"
 	"time"
-	"gopush/framework/db/imctx"
 )
 
 type UserSequence struct {
@@ -13,13 +13,21 @@ type UserSequence struct {
 	UpdateTime    time.Time `json:"update_time"`    // 更新时间
 }
 
+func (UserSequence) TableName() string {
+	return "t_user_sequence"
+}
+
 type userSequenceDao struct{}
 
 var UserSequenceDao = new(userSequenceDao)
 
-func (*userSequenceDao) Add(ctx *imctx.Context, userId int64, sequence int64) (int64, error) {
-	if err := session.DB.Create(device).Error; err != nil {
+func (*userSequenceDao) Add(session *db.Session, userId int64, sequence int64) (int64, error) {
+	userSequence := UserSequence{
+		UserId:userId,
+		Sequence:sequence,
+	}
+	if err := session.DB.Create(userSequence).Error; err != nil {
 		return -1, err
 	}
-	return device.Id, nil
+	return userSequence.Id, nil
 }
