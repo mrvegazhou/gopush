@@ -1,8 +1,8 @@
 package im
 
 import (
-	"../../../const"
-	"../../../framework/http"
+	"gopush/const"
+	"gopush/framework/http"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -12,11 +12,11 @@ type Controller struct {
 }
 
 
-func (c *Controller) badParam(ctx *gin.Context, err error) {
-	ctx.JSON(http.StatusOK, httphelper.NewWithError(constdefine.IM_BAD_REQUEST, constdefine.GetMsg(constdefine.IM_BAD_REQUEST)))
+func (c *Controller) badParam(ctx *gin.Context, err int) {
+	ctx.JSON(http.StatusOK, httphelper.NewWithError(err, constdefine.GetMsg(err)))
 }
 
-func (c *Controller) ResultOk(ctx *gin.Context, data interface{}, err error) {
+func (c *Controller) resultOk(ctx *gin.Context, data interface{}, err error) {
 	if err != nil {
 		ctx.JSON(http.StatusOK, httphelper.NewWithError(constdefine.IM_UNKNOWN_ERROR, err.Error()))
 		return

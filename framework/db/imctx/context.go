@@ -1,8 +1,8 @@
 package imctx
 
 import (
-	"../../db"
-	"../../../conf"
+	"gopush/framework/db"
+	"gopush/conf"
 	"github.com/gin-gonic/gin"
 )
 

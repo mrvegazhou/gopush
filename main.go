@@ -1,11 +1,11 @@
 package main
 
 import (
-	"./conf"
-	"./framework/config"
-	"./httpserver/routes"
+	"gopush/conf"
+	"gopush/httpserver/routes"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gopush/framework/config"
 	"net/http"
 	"strconv"
 	"sync"
@@ -28,14 +28,14 @@ func main() {
 	// }()
 
 	once.Do(func() {
-		Config.Load(&Conf, false, "conf/app.yml")
+		errs := Config.Load(&Conf, false, "conf/app.yml")
+		fmt.Println(errs)
 	})
-	fmt.Printf("Conf:", Conf)
-	router := gin.Default()
 
+	router := gin.Default()
 	router.LoadHTMLGlob("./httpserver/views/*.html")
 	router.StaticFS("/static", http.Dir("./httpserver/views/static"))
-	routes.InitVerify(Conf)
-	routes.CreateRouter(router, Conf)
+	session := routes.InitHandler(Conf, router)
+	routes.CreateRouter(router, session)
 	http.ListenAndServe(":"+strconv.Itoa(Conf.Port), router)
 }

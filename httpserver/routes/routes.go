@@ -1,31 +1,21 @@
 package routes
 
 import (
-	"../controllers"
+	"gopush/httpserver/controllers"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"gopush/httpserver/controllers/im"
 	"net/http"
 	"strconv"
-	"../../framework/db/imctx"
-	"../../framework/http"
-	"../../const"
-	"../../conf"
-	"../../framework/db"
-	"../service"
+	"gopush/framework/db/imctx"
+	"gopush/framework/http"
+	"gopush/const"
+	"gopush/conf"
+	"gopush/framework/db"
+	"gopush/httpserver/service/im"
+	"gopush/framework/helper"
 )
 
-func handler(handler imctx.HandlerFunc, session *imctx.Context) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		context := new(imctx.IMContext)
-		context.Context = c
-		if deviceId, ok := c.Keys[constdefine.KeyDeviceId]; ok {
-			context.DeviceId = deviceId.(int64)
-		}
-		if userId, ok := c.Keys[constdefine.KeyUserId]; ok {
-			context.UserId = userId.(int64)
-		}
-		handler(context, session)
-	}
-}
 // 权限校验
 func verify(c *imctx.IMContext, ctx *imctx.Context) {
 	deviceIdStr := c.GetHeader("device_id")
@@ -41,7 +31,8 @@ func verify(c *imctx.IMContext, ctx *imctx.Context) {
 		return
 	}
 
-	userId, err := service.AuthService.Auth(ctx, deviceId, token)
+	userId, err := imService.AuthService.Auth(ctx, deviceId, token)
+	fmt.Println("userId:", userId)
 	if err != nil {
 		c.JSON(http.StatusOK, httphelper.NewWithError(constdefine.IM_UNAUTHORIZED, constdefine.GetMsg(constdefine.IM_UNAUTHORIZED)))
 		c.Abort()
@@ -60,12 +51,15 @@ func verify(c *imctx.IMContext, ctx *imctx.Context) {
 	c.Next()
 }
 
-func InitVerify(conf *conf.MainConfig) {
-	gin.New().Use(handler(verify, imctx.NewContext(db.ConnectDB(conf), conf)))
+func InitHandler(conf *conf.MainConfig, engine *gin.Engine) *imctx.Context {
+	session := imctx.NewContext(db.ConnectDB(conf), conf)
+	//验证过滤
+	engine.Use(helper.Handler(verify, session))
+	return session
 }
 
-func CreateRouter(router *gin.Engine, conf *conf.MainConfig) {
-	new(baseController.ChatController).Router(router, conf)
-	//new(im.DeviceController).Router(router, conf)
+func CreateRouter(router *gin.Engine, ctx *imctx.Context) {
+	new(baseController.ChatController).Router(router, ctx.Conf)
+	new(im.DeviceController).Router(router, ctx)
 
 }

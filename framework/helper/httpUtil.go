@@ -3,13 +3,13 @@ package helper
 import (
 	"bytes"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"gopush/const"
+	"gopush/framework/db/imctx"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
-	"os"
-	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -96,4 +96,19 @@ func GetQuery(querys url.Values, key string) string {
 		return querys[key][0]
 	}
 	return ""
+}
+
+
+func Handler(handler imctx.HandlerFunc, session *imctx.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		context := new(imctx.IMContext)
+		context.Context = c
+		if deviceId, ok := c.Keys[constdefine.KeyDeviceId]; ok {
+			context.DeviceId = deviceId.(int64)
+		}
+		if userId, ok := c.Keys[constdefine.KeyUserId]; ok {
+			context.UserId = userId.(int64)
+		}
+		handler(context, session)
+	}
 }

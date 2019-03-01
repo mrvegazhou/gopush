@@ -1,7 +1,7 @@
 package baseController
 
 import (
-	"../../framework/pubsub/chat/longpolling"
+	"gopush/framework/pubsub/chat/longpolling"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"

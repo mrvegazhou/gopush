@@ -1,7 +1,7 @@
 package Config
 
 import (
-	"../json"
+	"gopush/framework/json"
 	"errors"
 	"fmt"
 	yaml "gopkg.in/yaml.v2"
@@ -66,6 +66,9 @@ func getConfigurationFiles(files ...string) []string {
 
 func processTags(config interface{}) error {
 	configValue := reflect.Indirect(reflect.ValueOf(config))
+	if configValue.Kind() == reflect.Ptr {
+		configValue = configValue.Elem()
+	}
 	if configValue.Kind() != reflect.Struct {
 		return errors.New("invalid config, should be struct")
 	}
@@ -78,6 +81,8 @@ func processTags(config interface{}) error {
 
 		if isBlank := reflect.DeepEqual(field.Interface(), reflect.Zero(field.Type()).Interface()); isBlank {
 			if value := fieldStruct.Tag.Get("default"); value != "" {
+				//Addr():获取 v 值的地址，相当于 & 取地址操作。v 值必须可寻址。
+				//Interface():将 v 值转换为空接口类型。v 值必须可转换为接口类型。
 				if err := yaml.Unmarshal([]byte(value), field.Addr().Interface()); err != nil {
 					return err
 				}

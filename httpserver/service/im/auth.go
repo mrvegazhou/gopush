@@ -1,10 +1,10 @@
-package service
+package imService
 
 import (
 	"database/sql"
-	"../../framework/db/imctx"
-	"../models/im"
-	"../../const"
+	"gopush/framework/db/imctx"
+	"gopush/httpserver/models/im"
+	"gopush/const"
 	"errors"
 )
 type authService struct{}

@@ -17,6 +17,7 @@ var MsgFlags = map[int]string{
 	IM_UNKNOWN_ERROR:	"unkown error",	//未知错误
 	IM_DEVICE_NOT_BIND_USER:	"device not bind user",	// 设备没有绑定用户
 	IM_ERROR_DEVICE_TOKEN:	"error device token",// 设备id或者token错误
+	IM_ERROR_USER_REGIST:	"error user regist",//	用户注册失败
 	NUMBER_HAS_BE_USED:	"number has be used",// 手机号码已经被使用
 	ERROR_NUMBER_OR_PASSWORD:	"error number or password",// 用户名或者密码错误
 }

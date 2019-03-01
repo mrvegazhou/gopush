@@ -1,7 +1,7 @@
 package baseController
 
 import (
-	"../../const"
+	"gopush/const"
 	"github.com/gin-gonic/gin"
 )
 

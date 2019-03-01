@@ -1,7 +1,7 @@
 package longpolling
 
 import (
-	"../chatroom"
+	"gopush/framework/pubsub/chat/chatroom"
 )
 
 func JoinChat(uname string) {

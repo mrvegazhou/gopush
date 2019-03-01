@@ -2,12 +2,13 @@ appname: gopush
 port: 8081
 addr: 127.0.0.1
 postgresql:
-    dbType:       postgresql
-    dbName:       chatdb
-    dbUserName:   dbuser
-    dbPassword:   dbuser123
-    port:         5432
+    dbType:       "postgres"
+    dbName:       "chatdb"
+    dbUserName:   "dbuser"
+    dbPassword:   "dbuser123"
+    dbPort:         5432
+    dbHost:         "127.0.0.1"
 jwt:
-    key:  token-key-123
+    key:  "token-key-123"
 json:
     pretty:   true
