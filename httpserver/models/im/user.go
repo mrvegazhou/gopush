@@ -1,8 +1,9 @@
 package imModel
 
 import (
-	"time"
 	"gopush/framework/db"
+	"time"
+	"gopush/framework/db/imctx"
 )
 
 type User struct {
@@ -10,13 +11,13 @@ type User struct {
 	Mobile	string	`json:"mobile"`
 	Nickname	string	`json:"nickname"`
 	Password	string `json:"password"`
-	CreateTime    time.Time `json:"create_time"`    // 创建时间
-	UpdateTime    time.Time `json:"update_time"`    // 更新时间
+	CreateTime    int64 `json:"create_time"`    // 创建时间
+	UpdateTime    int64 `json:"update_time"`    // 更新时间
 }
 
 // SignIn 登录结构体
 type SignIn struct {
-	Number   string `json:"number"`
+	Mobile   string `json:"mobile"`
 	Password string `json:"password"`
 }
 
@@ -33,9 +34,20 @@ func (User) TableName() string {
 type userDao struct{}
 var UserDao = new(userDao)
 
-func (*userDao) Add(session *db.Session, user User) (int64, error) {
-	if err := session.DB.Create(user).Error; err != nil {
+func (*userDao) Add(ctx *imctx.Context, user User) (int64, error) {
+	now := time.Now().UnixNano()
+	user.CreateTime = now
+	user.UpdateTime = now
+	db := ctx.Session.DB
+	db.LogMode(ctx.Conf.Postgresql.DbDebug)
+	if err := db.Create(&user).Error; err != nil {
 		return -1, err
 	}
 	return user.Id, nil
+}
+
+func (*userDao) GetByNumber(session *db.Session, mobile string) (*User, error) {
+	var user User
+	err := session.DB.Select("id,mobile,nickname,password").Where("mobile=?", mobile).Scan(&user).Error
+	return &user, err
 }

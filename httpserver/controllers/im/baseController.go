@@ -1,9 +1,9 @@
 package im
 
 import (
+	"github.com/gin-gonic/gin"
 	"gopush/const"
 	"gopush/framework/http"
-	"github.com/gin-gonic/gin"
 	"net/http"
 )
 

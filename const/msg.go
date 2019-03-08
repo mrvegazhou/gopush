@@ -16,10 +16,14 @@ var MsgFlags = map[int]string{
 	IM_BAD_REQUEST: "bad request", 		//请求错误
 	IM_UNKNOWN_ERROR:	"unkown error",	//未知错误
 	IM_DEVICE_NOT_BIND_USER:	"device not bind user",	// 设备没有绑定用户
+
 	IM_ERROR_DEVICE_TOKEN:	"error device token",// 设备id或者token错误
 	IM_ERROR_USER_REGIST:	"error user regist",//	用户注册失败
+	IM_ERROR_OUT_OF_SIZE:	"package content out of size", // package的content字节数组过大
 	NUMBER_HAS_BE_USED:	"number has be used",// 手机号码已经被使用
-	ERROR_NUMBER_OR_PASSWORD:	"error number or password",// 用户名或者密码错误
+	ERROR_MOBILE:	"error mobile",// 用户名手机号错误
+	ERROR_PASSWORD:	"error password", //用户名密码错误
+
 }
 
 func GetMsg(code int) string {

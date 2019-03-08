@@ -8,7 +8,12 @@ postgresql:
     dbPassword:   "dbuser123"
     dbPort:         5432
     dbHost:         "127.0.0.1"
+    dbDebug:        true
 jwt:
     key:  "token-key-123"
 json:
     pretty:   true
+tcp:
+    address:        "127.0.0.1"
+    maxConnCount:   10
+    acceptCount:    10

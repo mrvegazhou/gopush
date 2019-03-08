@@ -48,3 +48,4 @@ func (*deviceService) Regist(ctx *imctx.Context, device *imModel.Device) (int64,
 	tx.Commit()
 	return id, device.Token, nil
 }
+

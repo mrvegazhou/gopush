@@ -43,5 +43,12 @@ FOR EACH ROW
 EXECUTE PROCEDURE "upd_timestamp"();
 
 create trigger t_name before update on t_device_sync_sequence for each row execute procedure upd_timestamp();
+alter table "t_device"  add COLUMN  update_time  timestamp(6) without time zone;
+alter table "t_device" alter  COLUMN  update_time SET DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE t_device_send_sequence ALTER COLUMN create_time SET DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE t_device_send_sequence ALTER COLUMN create_time SET DEFAULT CURRENT_TIMESTAMP;
+
+GRANT USAGE, SELECT ON SEQUENCE t_user_id_seq TO dbuser;
+
+alter table "t_user"  add COLUMN  create_time  bigint,
+	ALTER COLUMN create_time SET NOT NULL
