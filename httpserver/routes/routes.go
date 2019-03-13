@@ -2,9 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"gopush/conf"
 	"gopush/const"
-	"gopush/framework/db"
 	"gopush/framework/db/imctx"
 	"gopush/framework/helper"
 	"gopush/framework/http"
@@ -48,11 +46,9 @@ func verify(c *imctx.IMContext, ctx *imctx.Context) {
 	c.Next()
 }
 
-func InitHandler(conf *conf.MainConfig, engine *gin.Engine) *imctx.Context {
-	session := imctx.NewContext(db.ConnectDB(conf), conf)
+func InitHandler(ctx *imctx.Context, engine *gin.Engine) {
 	//验证过滤
-	engine.Use(helper.Handler(verify, session))
-	return session
+	engine.Use(helper.Handler(verify, ctx))
 }
 
 func CreateRouter(router *gin.Engine, ctx *imctx.Context) {

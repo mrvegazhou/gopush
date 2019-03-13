@@ -18,15 +18,24 @@ const (
 	IMReadDeadline  = 10 * time.Minute
 	IMWriteDeadline = 10 * time.Second
 
-	IMCodeSignIn         = 1 // 设备登录
-	IMCodeSignInACK      = 2 // 设备登录回执
-	IMCodeSyncTrigger    = 3 // 消息同步触发
-	IMCodeHeadbeat       = 4 // 心跳
-	IMCodeHeadbeatACK    = 5 // 心跳回执
-	IMCodeMessageSend    = 6 // 消息发送
-	IMCodeMessageSendACK = 7 // 消息发送回执
-	IMCodeMessage        = 8 // 消息投递
-	IMCodeMessageACK     = 9 // 消息投递回执
+	IMCodeSignIn         	= 1 // 设备登录
+	IMCodeSignInACK     	= 2 // 设备登录回执
+	IMCodeSyncTrigger    	= 3 // 消息同步触发
+	IMCodeHeadbeat       	= 4 // 心跳
+	IMCodeHeadbeatACK    	= 5 // 心跳回执
+	IMCodeMessageSend    	= 6 // 消息发送
+	IMCodeMessageSendACK 	= 7 // 消息发送回执
+	IMCodeMessage        	= 8 // 消息投递
+	IMCodeMessageACK     	= 9 // 消息投递回执
+
+	IMCodeSignInSuccess 	= 1
+	IMCodeSignInFail    	= 2
+
+	IMDeviceOnline  		= 1
+	IMDeviceOffline 		= 0
+
+	IMMessageTypeSync		= 1 // 消息同步
+	IMMessageTypeMail 		= 2 // 消息投递
 )
 
 const (

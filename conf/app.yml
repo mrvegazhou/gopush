@@ -17,3 +17,11 @@ tcp:
     address:        "127.0.0.1"
     maxConnCount:   10
     acceptCount:    10
+redis:
+    host:   "127.0.0.1"
+    port:   6379
+    password:     ""
+    maxIdle:    10
+    maxActive:  10000
+    wait:   true
+    dbNum: 0

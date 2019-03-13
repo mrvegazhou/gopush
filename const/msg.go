@@ -23,7 +23,10 @@ var MsgFlags = map[int]string{
 	NUMBER_HAS_BE_USED:	"number has be used",// 手机号码已经被使用
 	ERROR_MOBILE:	"error mobile",// 用户名手机号错误
 	ERROR_PASSWORD:	"error password", //用户名密码错误
+	ERROR_CONFIG:	"error config", //没有找到配置信息
+	ERROR_REDIS: "error redis connection", //redis连接失败
 
+	RECORD_NOT_FOUND:"record not found", //没有数据
 }
 
 func GetMsg(code int) string {

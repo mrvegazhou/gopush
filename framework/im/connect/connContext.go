@@ -2,11 +2,16 @@ package connect
 
 import (
 	"fmt"
+	"github.com/golang/protobuf/proto"
+	"gopush/conf"
 	"gopush/const"
 	"io"
 	"net"
 	"strings"
 	"time"
+	"gopush/framework/im/public/proto"
+	"gopush/framework/im/public/transfer"
+	"gopush/framework/db/imctx"
 )
 
 // Package 消息包
@@ -28,14 +33,71 @@ func NewConnContext(conn *net.TCPConn) *ConnContext {
 	return &ConnContext{Codec: codec}
 }
 
-func (c *ConnContext) DoConn() {
+func (c *ConnContext) DoConn(ctx *imctx.Context) {
 	defer RecoverPanic()
 	for {
 		err := c.Codec.Conn.SetReadDeadline(time.Now().Add(constdefine.IMReadDeadline))
+		if err != nil {
+			c.HandleReadErr(err)
+			return
+		}
+		_, err = c.Codec.Read()
+		if err != nil {
+			c.HandleReadErr(err)
+			return
+		}
 
+		for {
+			message, ok := c.Codec.Decode()
+			if ok {
+				c.HandlePackage(message, ctx)
+				continue
+			}
+			break
+		}
 	}
 }
 
+func (c *ConnContext) HandlePackage(pack *Package, ctx *imctx.Context) {
+	// 未登录拦截
+	if pack.Code != constdefine.IMCodeSignIn && c.IsSignIn == false {
+		c.Release()
+		return
+	}
+	switch pack.Code {
+	case constdefine.IMCodeSignIn:
+		c.HandlePackageSignIn(pack, ctx)
+	case constdefine.IMCodeSyncTrigger:
+	case constdefine.IMCodeHeadbeat:
+	case constdefine.IMCodeMessageSend:
+	case constdefine.IMCodeMessageACK:
+	}
+}
+
+// HandlePackageSignIn 处理登录消息包
+func (c *ConnContext) HandlePackageSignIn(pack *Package, ctx *imctx.Context) {
+	var signIn pb.SignIn
+	err := proto.Unmarshal(pack.Content, &signIn)
+	if err != nil {
+		fmt.Println(err)
+		c.Release()
+		return
+	}
+	transferSignIn := transfer.SignIn{
+		DeviceId: signIn.DeviceId,
+		UserId:   signIn.UserId,
+		Token:    signIn.Token,
+	}
+
+	// 处理设备登录逻辑
+	ack, err := LogicRPC.SignIn(ctx, transferSignIn)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	
+
+}
 
 // HandleReadErr 读取conn错误
 func (c *ConnContext) HandleReadErr(err error) {

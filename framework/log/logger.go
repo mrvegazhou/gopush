@@ -46,6 +46,7 @@ func init() {
 			w),
 		zap.DebugLevel,
 	)
+	// 开启开发模式，堆栈跟踪 构造日志
 	Logger = zap.New(core, zap.AddCaller())
 	Sugar = Logger.Sugar()
 }

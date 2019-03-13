@@ -9,12 +9,24 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"gopush/framework/db"
+	"gopush/framework/db/imctx"
+	"gopush/framework/im/connect"
 )
 
 var (
 	Conf        = new(conf.MainConfig)
 	once        sync.Once
 )
+
+func httpServer(ctx *imctx.Context) {
+	router := gin.Default()
+	router.LoadHTMLGlob("./httpserver/views/*.html")
+	router.StaticFS("/static", http.Dir("./httpserver/views/static"))
+	routes.InitHandler(ctx, router)
+	routes.CreateRouter(router, ctx)
+	http.ListenAndServe(":"+strconv.Itoa(Conf.Port), router)
+}
 
 func main() {
 	// defer func() {
@@ -32,10 +44,11 @@ func main() {
 		fmt.Println(errs)
 	})
 
-	router := gin.Default()
-	router.LoadHTMLGlob("./httpserver/views/*.html")
-	router.StaticFS("/static", http.Dir("./httpserver/views/static"))
-	session := routes.InitHandler(Conf, router)
-	routes.CreateRouter(router, session)
-	http.ListenAndServe(":"+strconv.Itoa(Conf.Port), router)
+	ctx := imctx.NewContext(db.ConnectDB(Conf), Conf)
+
+	go httpServer(ctx)
+
+	server := connect.NewTCPServer(ctx)
+	server.Start(ctx)
+
 }

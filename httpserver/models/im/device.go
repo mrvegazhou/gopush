@@ -53,3 +53,12 @@ func (*deviceDao) UpdateUserId(session *db.Session, id, userId int64) error {
 	return nil
 }
 
+func (*deviceDao) UpdateStatus(session *db.Session, id int64, status int) error {
+	var device Device
+	update := time.Now().UnixNano()
+	if err := session.DB.Model(device).Where("id = ?", id).Updates(map[string]interface{}{"status": status, "update_time": update}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+

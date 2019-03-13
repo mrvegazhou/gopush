@@ -24,4 +24,13 @@ type MainConfig struct {
 		MaxConnCount int	`default:10 yaml:"maxConnCount"`
 		AcceptCount int `default:10 yaml:"acceptCount"`
 	}
+	Redis struct{
+		Host string	`default:"127.0.0.1" yaml:"host"`
+		Port int64	`default:6379 yaml:"port"`
+		Password string `default:"" yaml:"password"`
+		MaxIdle int	`default:10 yaml:"maxIdle"`
+		MaxActive int `default:10000 yaml:"maxActive"`
+		Wait bool `default:true yaml:"wait"`
+		DbNum int64	`default:0 yaml:"dbNum"`
+	}
 }

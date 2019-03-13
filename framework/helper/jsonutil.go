@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/json-iterator/go"
 	"io"
 	"strings"
 )
@@ -38,4 +39,13 @@ func ToString(conf interface{}) string {
 		return fmt.Sprintf("%+v", conf)
 	}
 	return out.String()
+}
+
+
+func JsonMarshal(v interface{}) string {
+	bytes, err := jsoniter.Marshal(v)
+	if err != nil {
+		fmt.Println("json序列化：", err)
+	}
+	return Bytes2str(bytes)
 }

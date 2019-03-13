@@ -2,7 +2,7 @@ package connect
 
 import (
 	"fmt"
-	"gopush/conf"
+	"gopush/framework/db/imctx"
 	"net"
 	"runtime"
 )
@@ -13,15 +13,15 @@ type TCPServer struct {
 	AcceptCount  int    // 接收建立连接的groutine数量
 }
 
-func NewTCPServer(conf *conf.MainConfig) *TCPServer {
+func NewTCPServer(ctx *imctx.Context) *TCPServer {
 	return &TCPServer{
-		Address:      conf.Tcp.Address,
-		MaxConnCount: conf.Tcp.MaxConnCount,
-		AcceptCount:  conf.Tcp.AcceptCount,
+		Address:      	ctx.Conf.Tcp.Address,
+		MaxConnCount: 	ctx.Conf.Tcp.MaxConnCount,
+		AcceptCount:  	ctx.Conf.Tcp.AcceptCount,
 	}
 }
 
-func (t *TCPServer) Start() {
+func (t *TCPServer) Start(ctx *imctx.Context) {
 	addr, err := net.ResolveTCPAddr("tcp", t.Address)
 	if err != nil {
 		fmt.Println(err)
@@ -32,11 +32,11 @@ func (t *TCPServer) Start() {
 		return
 	}
 	for i := 0; i < t.AcceptCount; i++ {
-		go t.Accept(listener)
+		go t.Accept(listener, ctx)
 	}
 }
 
-func (t *TCPServer) Accept(listener *net.TCPListener) {
+func (t *TCPServer) Accept(listener *net.TCPListener, ctx *imctx.Context) {
 
 	for {
 		conn, err := listener.AcceptTCP()
@@ -49,6 +49,8 @@ func (t *TCPServer) Accept(listener *net.TCPListener) {
 			fmt.Println(err)
 		}
 
+		connContext := NewConnContext(conn)
+		go connContext.DoConn(ctx)
 	}
 
 }
