@@ -3,8 +3,8 @@ package connect
 import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
-	"gopush/conf"
 	"gopush/const"
+	"gopush/framework/helper"
 	"io"
 	"net"
 	"strings"
@@ -69,7 +69,9 @@ func (c *ConnContext) HandlePackage(pack *Package, ctx *imctx.Context) {
 		c.HandlePackageSignIn(pack, ctx)
 	case constdefine.IMCodeSyncTrigger:
 	case constdefine.IMCodeHeadbeat:
+		c.HandlePackageHeadbeat()
 	case constdefine.IMCodeMessageSend:
+		c.HandlePackageMessageSend(pack)
 	case constdefine.IMCodeMessageACK:
 	}
 }
@@ -95,7 +97,54 @@ func (c *ConnContext) HandlePackageSignIn(pack *Package, ctx *imctx.Context) {
 		fmt.Println(err)
 		return
 	}
-	
+
+	content, err := proto.Marshal(&pb.SignInACK{Code: int32(ack.Code), Message: ack.Message})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	err = c.Codec.Eecode(Package{Code: constdefine.IMCodeSignInACK, Content: content}, constdefine.IMWriteDeadline)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if ack.Code == constdefine.IMCodeSignInSuccess{
+		c.IsSignIn = true
+		c.DeviceId = signIn.DeviceId
+		c.UserId = signIn.UserId
+		store(c.DeviceId, c)
+	}
+}
+
+func (c *ConnContext) HandlePackageHeadbeat() {
+	err := c.Codec.Eecode(Package{Code: constdefine.IMCodeHeadbeatACK, Content: []byte{}}, constdefine.IMWriteDeadline)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("心跳：", "device_id", c.DeviceId, "user_id", c.UserId)
+}
+
+func (c *ConnContext) HandlePackageMessageSend(pack *Package) {
+	var send pb.MessageSend
+	err := proto.Unmarshal(pack.Content, &send)
+	if err != nil {
+		fmt.Println(err)
+		c.Release()
+		return
+	}
+	transferSend := transfer.MessageSend{
+		SenderDeviceId: c.DeviceId,
+		SenderUserId:   c.UserId,
+		ReceiverType:   send.ReceiverType,
+		ReceiverId:     send.ReceiverId,
+		Type:           send.Type,
+		Content:        send.Content,
+		SendSequence:   send.SendSequence,
+		SendTime:		helper.UnunixTime(send.SendTime),
+	}
+
 
 }
 

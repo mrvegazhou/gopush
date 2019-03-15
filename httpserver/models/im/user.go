@@ -2,8 +2,8 @@ package imModel
 
 import (
 	"gopush/framework/db"
-	"time"
 	"gopush/framework/db/imctx"
+	"gopush/framework/helper"
 )
 
 type User struct {
@@ -35,7 +35,7 @@ type userDao struct{}
 var UserDao = new(userDao)
 
 func (*userDao) Add(ctx *imctx.Context, user User) (int64, error) {
-	now := time.Now().UnixNano()
+	now := helper.NowUnixTime()
 	user.CreateTime = now
 	user.UpdateTime = now
 	db := ctx.Session.DB

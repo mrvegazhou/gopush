@@ -2,7 +2,7 @@ package imModel
 
 import (
 	"gopush/framework/db"
-	"time"
+	"gopush/framework/helper"
 )
 
 // Friend 好友关系
@@ -30,7 +30,7 @@ func (Friend) TableName() string {
 type friendDao struct{}
 var FriendDao = new(friendDao)
 func (*friendDao) Add(session *db.Session, friend *Friend) (int64, error) {
-	now := time.Now().UnixNano()
+	now := helper.NowUnixTime()
 	friend.CreateTime = now
 	friend.UpdateTime = now
 	if err := session.DB.Create(friend).Error; err != nil {

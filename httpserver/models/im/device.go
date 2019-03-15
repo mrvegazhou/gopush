@@ -2,7 +2,7 @@ package imModel
 
 import (
 	"gopush/framework/db"
-	"time"
+	"gopush/framework/helper"
 )
 
 type Device struct {
@@ -35,7 +35,7 @@ func (*deviceDao) Get(session *db.Session, id int64) (*Device, error) {
 }
 
 func (*deviceDao) Add(session *db.Session, device *Device) (int64, error) {
-	now := time.Now().UnixNano()
+	now := helper.NowUnixTime()
 	device.CreateTime = now
 	device.UpdateTime = now
 	if err := session.DB.Create(device).Error; err != nil {
@@ -46,7 +46,7 @@ func (*deviceDao) Add(session *db.Session, device *Device) (int64, error) {
 
 func (*deviceDao) UpdateUserId(session *db.Session, id, userId int64) error {
 	var device Device
-	update := time.Now().UnixNano()
+	update := helper.NowUnixTime()
 	if err := session.DB.Model(device).Where("id = ?", id).Updates(map[string]interface{}{"user_id": userId, "update_time": update}).Error; err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (*deviceDao) UpdateUserId(session *db.Session, id, userId int64) error {
 
 func (*deviceDao) UpdateStatus(session *db.Session, id int64, status int) error {
 	var device Device
-	update := time.Now().UnixNano()
+	update := helper.NowUnixTime()
 	if err := session.DB.Model(device).Where("id = ?", id).Updates(map[string]interface{}{"status": status, "update_time": update}).Error; err != nil {
 		return err
 	}

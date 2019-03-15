@@ -2,7 +2,7 @@ package imModel
 
 import (
 	"gopush/framework/db"
-	"time"
+	"gopush/framework/helper"
 )
 
 type DeviceSendSequence struct {
@@ -21,7 +21,7 @@ type deviceSendSequenceDao struct{}
 var DeviceSendSequenceDao = new(deviceSendSequenceDao)
 
 func (*deviceSendSequenceDao) Add(session *db.Session, deviceId int64, sendSequence int64) error {
-	now := time.Now().UnixNano()
+	now := helper.NowUnixTime()
 	deviceSendSequence := DeviceSendSequence{DeviceId:deviceId, SendSequence:sendSequence, CreateTime:now, UpdateTime:now}
 	if err := session.DB.Create(&deviceSendSequence).Error; err != nil {
 		return err
@@ -31,7 +31,7 @@ func (*deviceSendSequenceDao) Add(session *db.Session, deviceId int64, sendSeque
 
 func (*deviceSendSequenceDao) UpdateSendSequence(session *db.Session, deviceId int64, sendSequence int64) error {
 	var deviceSendSequence DeviceSendSequence
-	update := time.Now().UnixNano()
+	update := helper.NowUnixTime()
 	if err := session.DB.Model(deviceSendSequence).Where("send_sequence = ?", sendSequence).Updates(map[string]interface{}{"device_id": deviceId, "update_time": update}).Error; err != nil {
 		return err
 	}
