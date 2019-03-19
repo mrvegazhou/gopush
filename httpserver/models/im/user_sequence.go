@@ -1,7 +1,9 @@
 package imModel
 
 import (
+	"github.com/jinzhu/gorm"
 	"gopush/framework/db"
+	"gopush/framework/helper"
 	"time"
 )
 
@@ -30,4 +32,22 @@ func (*userSequenceDao) Add(session *db.Session, userId int64, seq int64) (int64
 		return -1, err
 	}
 	return userSequence.Id, nil
+}
+
+func (*userSequenceDao) GetSequence(session *db.Session, userId int64) (int64, error) {
+	var sequence int64
+	var userSequence UserSequence
+	if err := session.DB.Model(&userSequence).Select("id,user_id,friend_id,seq,create_time,update_time").Where("user_id = ?", userId).Scan(&userSequence).Error; err!=nil {
+		return -1, err
+	}
+	return sequence, nil
+}
+
+func (*userSequenceDao) Increase(session *db.Session, userId int64) error {
+	var userSequence UserSequence
+	update := helper.NowUnixTime()
+	if err := session.DB.Model(&userSequence).Where("user_id = ?", userId).Update(map[string]interface{}{"sequence": gorm.Expr("sequence + ?", 1), "update_time": update}).Error; err != nil {
+		return err
+	}
+	return nil
 }

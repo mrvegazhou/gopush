@@ -37,3 +37,9 @@ func (*deviceSendSequenceDao) UpdateSendSequence(session *db.Session, deviceId i
 	}
 	return nil
 }
+
+func (*deviceSendSequenceDao) Get(session *db.Session, id int64) (*DeviceSendSequence, error) {
+	var deviceSendSequence DeviceSendSequence
+	err := session.DB.Model(&deviceSendSequence).Select("send_sequence from t_device_send_sequence").Where("device_id=?", id).Scan(&deviceSendSequence).Error
+	return &deviceSendSequence, err
+}

@@ -5,6 +5,8 @@ import (
 	"github.com/jinzhu/gorm"
 	"gopush/const"
 	"gopush/framework/db/imctx"
+	"gopush/framework/db"
+	"gopush/framework/helper"
 	"gopush/framework/im/public/transfer"
 	"gopush/httpserver/models/im"
 )
@@ -57,4 +59,38 @@ func (s *logicRPC) SignIn(ctx *imctx.Context, signIn transfer.SignIn) (*transfer
 		Code:    code,
 		Message: message,
 	}, err
+}
+
+func (s *logicRPC) MessageSend(ctx *imctx.Context, send transfer.MessageSend) error {
+	var err error
+	send.MessageId = db.LidGenId.Get()
+	fmt.Println("消息发送",
+		"device_id", send.SenderDeviceId,
+		"user_id", send.SenderUserId,
+		"message_id", send.MessageId,
+		"send_sequence", send.SendSequence)
+	// 检查消息是否重复发送
+	sendSequence, err := imModel.DeviceSendSequenceDao.Get(ctx.Session, send.SenderDeviceId)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	ack := transfer.MessageSendACK{
+		MessageId:    send.MessageId,
+		DeviceId:     send.SenderDeviceId,
+		SendSequence: send.SendSequence,
+		Code:         constdefine.IMCCodeSuccess,
+	}
+	if send.SendSequence <= sendSequence.SendSequence {
+		err = ConnectRPC.SendMessageSendACK(ack)
+		helper.PrintErr(err)
+		return nil
+	}
+
+	err = imModel.DeviceSendSequenceDao.UpdateSendSequence(ctx.Session, send.SenderDeviceId, send.SendSequence)
+	helper.PrintErr(err)
+
+	if send.ReceiverType == constdefine.IMReceiverUser {
+		err = service.MessageService.SendToFriend(ctx, send)
+	}
 }

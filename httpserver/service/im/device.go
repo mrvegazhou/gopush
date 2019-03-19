@@ -5,7 +5,6 @@ import (
 	"gopush/httpserver/models/im"
 	"gopush/framework/db/imctx"
 	"github.com/satori/go.uuid"
-	//"gopush/framework/log"
 )
 
 type deviceService struct{}

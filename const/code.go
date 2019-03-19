@@ -29,4 +29,6 @@ const (
 	ERROR_REDIS						    = 50005
 
 	RECORD_NOT_FOUND					= 60001
+	IS_NOT_FRIEND						= 60002
+
 )

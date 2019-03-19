@@ -26,7 +26,8 @@ var MsgFlags = map[int]string{
 	ERROR_CONFIG:	"error config", //没有找到配置信息
 	ERROR_REDIS: "error redis connection", //redis连接失败
 
-	RECORD_NOT_FOUND:"record not found", //没有数据
+	RECORD_NOT_FOUND: "record not found", //没有数据
+	IS_NOT_FRIEND: "is not friend",
 }
 
 func GetMsg(code int) string {
