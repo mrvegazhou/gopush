@@ -29,3 +29,33 @@ func (*connectRPC) SendMessageSendACK(ack transfer.MessageSendACK) error {
 
 	return nil
 }
+
+// SendMessage 处理消息投递
+func (*connectRPC) SendMessage(message transfer.Message) error {
+	ctx, err := load(message.DeviceId)
+	helper.PrintErr(err)
+
+	messages := make([]*pb.MessageItem, 0, len(message.Messages))
+	for _, v := range message.Messages {
+		item := new(pb.MessageItem)
+		item.MessageId = v.MessageId
+		item.SenderType = int32(v.SenderType)
+		item.SenderId = v.SenderId
+		item.SenderDeviceId = v.SenderDeviceId
+		item.ReceiverType = int32(v.ReceiverType)
+		item.ReceiverId = v.ReceiverId
+		item.Type = int32(v.Type)
+		item.Content = v.Content
+		item.SyncSequence = v.Sequence
+		item.SendTime = v.SendTime / 1000000
+
+		messages = append(messages, item)
+	}
+	content, err := proto.Marshal(&pb.Message{Type: message.Type, Messages: messages})
+	helper.PrintErr(err)
+
+	err = ctx.Codec.Eecode(Package{Code: constdefine.IMCodeMessage, Content: content}, constdefine.IMWriteDeadline)
+	helper.PrintErr(err)
+
+	return nil
+}

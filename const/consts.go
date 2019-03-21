@@ -42,8 +42,11 @@ const (
 	IMReceiverUser  		= 1 // 接收者类型为用户
 	IMReceiverGroup 		= 2 // 接收者类型为群组
 
-	SenderTypeUser  		= 1 // 用户发送
-	SenderTypeOther 		= 2 // 其他发送，业务推送
+	IMSenderTypeUser  		= 1 // 用户发送
+	IMSenderTypeOther 		= 2 // 其他发送，业务推送
+
+	IMMessageTypeSync 		= 1 // 消息同步
+	IMMessageTypeMail 		= 2 // 消息投递
 )
 
 const (

@@ -1,7 +1,7 @@
 package redigoUtil
 
 import (
-	"github.com/pkg/errors"
+	"errors"
 	"gopush/conf"
 	"gopush/const"
 	"gopush/framework/log"

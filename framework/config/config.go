@@ -1,7 +1,7 @@
 package Config
 
 import (
-	"gopush/framework/json"
+	"gopush/framework/helper"
 	"errors"
 	"fmt"
 	yaml "gopkg.in/yaml.v2"
@@ -23,9 +23,9 @@ func processFile(config interface{}, errorOnUnmatchedKeys bool, file string) err
 		}
 		return yaml.Unmarshal(data, config)
 	case strings.HasSuffix(file, ".json"):
-		return jsonutil.UnmarshalJSON(data, config, errorOnUnmatchedKeys)
+		return helper.UnmarshalJSON(data, config, errorOnUnmatchedKeys)
 	default:
-		if err := jsonutil.UnmarshalJSON(data, config, errorOnUnmatchedKeys); err == nil {
+		if err := helper.UnmarshalJSON(data, config, errorOnUnmatchedKeys); err == nil {
 			return nil
 		} else if strings.Contains(err.Error(), "json: unknown field") {
 			return err

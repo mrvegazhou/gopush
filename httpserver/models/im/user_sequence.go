@@ -8,9 +8,9 @@ import (
 )
 
 type UserSequence struct {
-	Id	int64     `json:"id" gorm:"primary_key;AUTO_INCREMENT"`
+	Id	int64     	`json:"id" gorm:"primary_key;AUTO_INCREMENT"`
 	UserId	int64	`json:"user_id"`
-	Seq	int64	`json:"seq"`
+	Seq	int64		`json:"seq"`
 	CreateTime    time.Time `json:"create_time"`    // 创建时间
 	UpdateTime    time.Time `json:"update_time"`    // 更新时间
 }
@@ -35,12 +35,11 @@ func (*userSequenceDao) Add(session *db.Session, userId int64, seq int64) (int64
 }
 
 func (*userSequenceDao) GetSequence(session *db.Session, userId int64) (int64, error) {
-	var sequence int64
 	var userSequence UserSequence
 	if err := session.DB.Model(&userSequence).Select("id,user_id,friend_id,seq,create_time,update_time").Where("user_id = ?", userId).Scan(&userSequence).Error; err!=nil {
 		return -1, err
 	}
-	return sequence, nil
+	return userSequence.Seq, nil
 }
 
 func (*userSequenceDao) Increase(session *db.Session, userId int64) error {

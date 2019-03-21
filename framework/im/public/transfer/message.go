@@ -39,7 +39,7 @@ type MessageItem struct {
 	Type           int       `json:"type"`             // 消息类型
 	Content        string    `json:"content"`          // 消息内容
 	Sequence       int64     `json:"sequence"`         // 消息序列
-	SendTime       time.Time `json:"send_time"`        // 消息发送时间戳，精确到毫秒
+	SendTime       int64	  `json:"send_time"`        // 消息发送时间戳，精确到毫秒
 }
 
 type MessageACK struct {

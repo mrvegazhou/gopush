@@ -4,7 +4,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
-	"../../framework/helper"
+	"gopush/framework/helper"
 	"os"
 	"time"
 )

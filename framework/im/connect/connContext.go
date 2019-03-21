@@ -142,7 +142,7 @@ func (c *ConnContext) HandlePackageMessageSend(pack *Package) {
 		Type:           send.Type,
 		Content:        send.Content,
 		SendSequence:   send.SendSequence,
-		SendTime:		helper.UnunixTime(send.SendTime),
+		SendTime:		send.SendTime,
 	}
 
 

@@ -24,7 +24,6 @@ func (*deviceService) Regist(ctx *imctx.Context, device *imModel.Device) (int64,
 
 	id, err := imModel.DeviceDao.Add(ctx.Session, device)
 	if err != nil {
-		//logger.Sugar.Error(err)
 		fmt.Printf(err.Error())
 		tx.Rollback()
 		return 0, "", err
@@ -32,7 +31,6 @@ func (*deviceService) Regist(ctx *imctx.Context, device *imModel.Device) (int64,
 
 	err = imModel.DeviceSendSequenceDao.Add(ctx.Session, id, 0)
 	if err != nil {
-		//logger.Sugar.Error(err)
 		tx.Rollback()
 		return 0, "", err
 	}

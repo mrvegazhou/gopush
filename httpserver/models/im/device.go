@@ -62,3 +62,9 @@ func (*deviceDao) UpdateStatus(session *db.Session, id int64, status int) error 
 	return nil
 }
 
+func (*deviceDao) ListOnlineByUserId(session *db.Session, userId int64) ([]*Device, error) {
+	var devices []*Device
+	query := session.DB.Select("id,type,brand,model,system_version,app_version").Where(map[string]interface{}{"user_id": userId, "status": 1}).Find(&devices)
+	return devices, query.Error
+}
+

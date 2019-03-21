@@ -11,6 +11,7 @@ type User struct {
 	Mobile	string	`json:"mobile"`
 	Nickname	string	`json:"nickname"`
 	Password	string `json:"password"`
+	Sex 		int	   `json:"sex"`
 	CreateTime    int64 `json:"create_time"`    // 创建时间
 	UpdateTime    int64 `json:"update_time"`    // 更新时间
 }

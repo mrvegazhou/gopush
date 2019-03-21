@@ -7,7 +7,6 @@ import (
 	"gopush/conf"
 	"gopush/framework/config"
 	"time"
-	"gopush/framework/db"
 )
 
 type Lid struct {
@@ -99,7 +98,7 @@ func init() {
 		fmt.Println(err)
 		panic(err)
 	}
-	session := db.ConnectDB(conf)
+	session := ConnectDB(conf)
 	LidGenId, err = NewLid(session.DB, "message_id", 1000)
 	if err != nil {
 		fmt.Println(err)
