@@ -20,12 +20,13 @@ var (
 )
 
 func httpServer(ctx *imctx.Context) {
-	router := gin.Default()
+	// 创建一个不包含中间件的路由器
+	router := gin.New()
 	router.LoadHTMLGlob("./httpserver/views/*.html")
 	router.StaticFS("/static", http.Dir("./httpserver/views/static"))
 	routes.InitHandler(ctx, router)
 	routes.CreateRouter(router, ctx)
-	http.ListenAndServe(":"+strconv.Itoa(Conf.Port), router)
+	router.Run(":"+strconv.Itoa(Conf.Port))
 }
 
 func main() {

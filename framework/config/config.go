@@ -1,15 +1,33 @@
 package Config
 
 import (
-	"gopush/framework/helper"
+	"encoding/json"
 	"errors"
 	"fmt"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
+	"io"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
 )
+
+
+func UnmarshalJSON(data []byte, config interface{}, errorOnUnmatchedKeys bool) error {
+	reader := strings.NewReader(string(data))
+	decoder := json.NewDecoder(reader)
+
+	if errorOnUnmatchedKeys {
+		decoder.DisallowUnknownFields()
+	}
+
+	err := decoder.Decode(config)
+	if err != nil && err != io.EOF {
+		return err
+	}
+	return nil
+
+}
 
 func processFile(config interface{}, errorOnUnmatchedKeys bool, file string) error {
 	data, err := ioutil.ReadFile(file)
@@ -23,9 +41,9 @@ func processFile(config interface{}, errorOnUnmatchedKeys bool, file string) err
 		}
 		return yaml.Unmarshal(data, config)
 	case strings.HasSuffix(file, ".json"):
-		return helper.UnmarshalJSON(data, config, errorOnUnmatchedKeys)
+		return UnmarshalJSON(data, config, errorOnUnmatchedKeys)
 	default:
-		if err := helper.UnmarshalJSON(data, config, errorOnUnmatchedKeys); err == nil {
+		if err := UnmarshalJSON(data, config, errorOnUnmatchedKeys); err == nil {
 			return nil
 		} else if strings.Contains(err.Error(), "json: unknown field") {
 			return err
@@ -120,6 +138,5 @@ func Load(config interface{}, errorOnUnmatchedKeys bool, files ...string) error 
 			return err
 		}
 	}
-
 	return processTags(config)
 }

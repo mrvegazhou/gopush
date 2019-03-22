@@ -34,6 +34,8 @@ func (t *TCPServer) Start(ctx *imctx.Context) {
 	for i := 0; i < t.AcceptCount; i++ {
 		go t.Accept(listener, ctx)
 	}
+
+	select {}
 }
 
 func (t *TCPServer) Accept(listener *net.TCPListener, ctx *imctx.Context) {

@@ -44,9 +44,6 @@ const (
 
 	IMSenderTypeUser  		= 1 // 用户发送
 	IMSenderTypeOther 		= 2 // 其他发送，业务推送
-
-	IMMessageTypeSync 		= 1 // 消息同步
-	IMMessageTypeMail 		= 2 // 消息投递
 )
 
 const (

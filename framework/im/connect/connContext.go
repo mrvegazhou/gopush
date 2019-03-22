@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"gopush/const"
-	"gopush/framework/helper"
 	"io"
 	"net"
 	"strings"
@@ -71,7 +70,7 @@ func (c *ConnContext) HandlePackage(pack *Package, ctx *imctx.Context) {
 	case constdefine.IMCodeHeadbeat:
 		c.HandlePackageHeadbeat()
 	case constdefine.IMCodeMessageSend:
-		c.HandlePackageMessageSend(pack)
+		c.HandlePackageMessageSend(pack, ctx)
 	case constdefine.IMCodeMessageACK:
 	}
 }
@@ -126,7 +125,7 @@ func (c *ConnContext) HandlePackageHeadbeat() {
 	fmt.Println("心跳：", "device_id", c.DeviceId, "user_id", c.UserId)
 }
 
-func (c *ConnContext) HandlePackageMessageSend(pack *Package) {
+func (c *ConnContext) HandlePackageMessageSend(pack *Package, ctx *imctx.Context) {
 	var send pb.MessageSend
 	err := proto.Unmarshal(pack.Content, &send)
 	if err != nil {
@@ -145,7 +144,10 @@ func (c *ConnContext) HandlePackageMessageSend(pack *Package) {
 		SendTime:		send.SendTime,
 	}
 
-
+	err = LogicRPC.MessageSend(ctx, transferSend)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 // HandleReadErr 读取conn错误

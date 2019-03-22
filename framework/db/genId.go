@@ -79,7 +79,9 @@ func (l *Lid) getFromDB() error {
 		fmt.Println(err)
 		return err
 	}
-	err = l.db.Model(genId).Where("business_id = ?", l.businessId).Update("max_id", maxId+step).Error
+
+	update := time.Now().Unix()
+	err = l.db.Model(genId).Where("business_id = ?", l.businessId).Updates(map[string]interface{}{"max_id": maxId+step, "update_time": update}).Error
 	if err!=nil {
 		tx.Rollback()
 		fmt.Println(err)
@@ -93,7 +95,7 @@ var LidGenId *Lid
 
 func init() {
 	conf := new(conf.MainConfig)
-	err := Config.Load(&conf, false, "../../conf/app.yml")
+	err := Config.Load(&conf, false, "conf/app.yml")
 	if err != nil {
 		fmt.Println(err)
 		panic(err)

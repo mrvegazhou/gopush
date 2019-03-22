@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"gopush/conf"
 	_ "database/sql"
 	"github.com/jinzhu/gorm"
@@ -24,6 +25,7 @@ func ConnectDB(mainConf *conf.MainConfig) *Session {
 	var err error
 	var db *gorm.DB
 	db, err = gorm.Open(dbType, "host="+ dbHost +" user=" + dbUserName + " password=" + dbUserPassword + " dbname=" + dbName + " port=" + dbPort + " sslmode=disable")
+	fmt.Println("host="+ dbHost +" user=" + dbUserName + " password=" + dbUserPassword + " dbname=" + dbName + " port=" + dbPort + " sslmode=disable")
 	if err != nil {
 		panic(err)
 	}

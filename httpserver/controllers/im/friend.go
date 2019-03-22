@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gopush/framework/helper"
 	"gopush/framework/db/imctx"
-	"gopush/httpserver/models/im"
 	"gopush/httpserver/service/im"
 )
 
@@ -14,7 +13,7 @@ type FriendController struct {
 
 func (ctrl *FriendController) Router(router *gin.Engine, ctx *imctx.Context) {
 	g := router.Group("/friend")
-	router.POST("/all", helper.Handler(ctrl.All, ctx))
+	g.POST("/all", helper.Handler(ctrl.All, ctx))
 }
 
 func (ctrl *FriendController) All(c *imctx.IMContext, ctx *imctx.Context) {

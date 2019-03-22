@@ -3,11 +3,15 @@ package connect
 import (
 	"encoding/json"
 	"fmt"
+	"gopush/conf"
+	"gopush/framework/config"
 	"gopush/framework/db/redis"
 )
 
 func init() {
-	redigoUtil.NewConnectionWithConf(ConfTcpServer)
+	conf := new(conf.MainConfig)
+	Config.Load(&conf, false, "conf/app.yml")
+	redigoUtil.NewConnectionWithConf(conf)
 }
 
 func store(deviceId int64, ctx *ConnContext) error{

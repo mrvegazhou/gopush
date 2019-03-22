@@ -37,7 +37,7 @@ func UnixTime(t time.Time) int64 {
 }
 
 func NowUnixTime() int64 {
-	return time.Now().UnixNano() / 1000000
+	return time.Now().Unix()
 }
 
 // UnunixTime 将毫秒数转为时间
